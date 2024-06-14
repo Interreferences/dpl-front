@@ -1,7 +1,7 @@
 <script setup>
 
-import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
+import Header from "@/components/Header/Header.vue";
 </script>
 
 <template>
@@ -9,8 +9,8 @@ import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
     <Header />
     <div class="flex flex-row">
       <Sidebar />
-      <div>
-        Admin Main!
+      <div class="flex flex-col w-full">
+
       </div>
     </div>
   </div>
