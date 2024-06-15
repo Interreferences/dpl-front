@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import WPMainView from "@/views/web-player/MainView.vue";
 import APMainView from "@/views/admin-panel/MainView.vue";
 import APArtistsView from "@/views/admin-panel/artists/ArtistsView.vue";
-import AddArtistView from "@/views/web-player/artists/AddArtistView.vue";
+import AddArtistView from "@/views/admin-panel/artists/AddArtistView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
