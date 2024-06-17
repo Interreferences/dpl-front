@@ -1,34 +1,35 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { getArtists } from "@/services/api"; // Импортируем функцию getArtists
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
-import ArtistRow from "@/components/Admin-panel/ArtistRow.vue";
+import { getTracks } from "@/services/api.js";
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import Loader from "@/components/Loader.vue";
 
-const artists = ref([]); // Полный список артистов
-const displayedArtists = ref([]); // Отображаемая порция артистов
+const tracks = ref([]); // Полный список треков
+const displayedTracks = ref([]); // Отображаемая порция треков
 const currentIndex = ref(0); // Текущий индекс
 const limit = ref(10); // Количество записей на порцию
 const isLoading = ref(false); // Состояние загрузки данных
 const initialLoading = ref(true); // Состояние первой загрузки данных
 const scrollContainer = ref(null); // Ссылка на элемент прокрутки
 
-const loadAllArtists = async () => {
+const loadAllTracks = async () => {
   try {
-    const data = await getArtists();
+    const data = await getTracks();
     return data;
   } catch (error) {
+    console.error('Ошибка при загрузке треков:', error);
     throw error;
   }
 };
 
-const loadMoreArtists = () => {
-  if (isLoading.value || currentIndex.value >= artists.value.length) return;
+const loadMoreTracks = () => {
+  if (isLoading.value || currentIndex.value >= tracks.value.length) return;
 
   isLoading.value = true;
-  const newArtists = artists.value.slice(currentIndex.value, currentIndex.value + limit.value);
-  displayedArtists.value = [...displayedArtists.value, ...newArtists];
+  const newTracks = tracks.value.slice(currentIndex.value, currentIndex.value + limit.value);
+  displayedTracks.value = [...displayedTracks.value, ...newTracks];
   currentIndex.value += limit.value;
   isLoading.value = false;
 };
@@ -38,15 +39,15 @@ const handleScroll = () => {
 
   const container = scrollContainer.value;
   if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    loadMoreArtists();
+    loadMoreTracks();
   }
 };
 
-// Загружаем всех артистов при монтировании компонента и отображаем первую порцию
 onMounted(async () => {
   try {
-    artists.value = await loadAllArtists();
-    loadMoreArtists(); // Отображаем первую порцию данных
+    tracks.value = await loadAllTracks();
+    console.log(tracks);
+    loadMoreTracks(); // Отображаем первую порцию данных
     scrollContainer.value.addEventListener('scroll', handleScroll);
     initialLoading.value = false; // Завершаем начальную загрузку
   } catch (error) {
@@ -60,6 +61,7 @@ onBeforeUnmount(() => {
   }
 });
 </script>
+
 <template>
   <div class="flex flex-col h-screen">
     <Header />
@@ -77,30 +79,46 @@ onBeforeUnmount(() => {
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>
-            <router-link to="/admin-panel/artists/create">
+            <router-link to="/admin-panel/tracks/create">
               <div class="rounded-md items-center p-2 flex text-lg flex-row shadow-md text-gray-300 hover:text-neutral-800 xl:text-xl 2xl:text-4xl 2xl:p-4 3xl:text-5xl 3xl:p-6">
                 <i class="fa-solid fa-plus"></i>
-                <span class="ml-2 hidden md:block">Добавить артиста</span>
+                <span class="ml-2 hidden md:block">Добавить трек</span>
               </div>
             </router-link>
           </div>
           <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-            Артисты
+            Треки
           </div>
         </div>
-        <div class="w-full flex items-center border-b border-gray-300" v-if="!initialLoading">
-          <p class="w-1/5 text-center md:w-2/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">#</p>
-          <div class="w-2/5 py-2 md:w-2/12 xl:py-4 2xl:py-8 3x:py-12"></div>
-          <p class="w-2/5 md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Псевдоним</p>
-          <p class="hidden md:block md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Дата создания</p>
+        <div class="w-full flex items-center border-b border-gray-300 p-4 3xl:p-6" v-if="!initialLoading">
+          <p class="w-1/6 text-center md:w-1/12 xl:w-1/12 2xl:w-1/12 2xl:text-xl 3xl:w-1/12 3xl:text-3xl">#</p>
+          <p class="w-3/6 text-center md:w-5/12 xl:w-2/12 2xl:w-2/12 2xl:text-xl 3xl:w-2/12 3xl:text-3xl">Название</p>
+          <p class="hidden xl:block xl:w-2/12 xl:text-center 2xl:w-2/12 2xl:text-xl 3xl:w-2/12 3xl:text-3xl">Исполнитель</p>
+          <p class="w-2/6 overflow-y-scroll md:w-5/12 xl:w-3/12 2xl:w-2/12 2xl:text-xl 3xl:w-3/12 3xl:text-3xl">Аудио</p>
+          <p class="hidden xl:block xl:w-1/12 xl:text-center 2xl:w-1/12 2xl:text-xl 3xl:w-1/12 3xl:text-3xl">Прослушиваний</p>
+          <p class="hidden md:block md:w-1/12 md:text-center xl:w-1/12 2xl:text-xl 2xl:w-1/12 3xl:w-1/12 3xl:text-3xl">EC</p>
+          <p class="hidden 3xl:block 3xl:w-1/12 2xl:text-xl 3xl:text-center 3xl:text-3xl">Дата создания</p>
         </div>
-        <div v-if="displayedArtists.length > 0 && !initialLoading">
-          <ArtistRow v-for="(artist, index) in displayedArtists" :key="artist.id"
-                     :index="index + 1" :id="artist.id" :name="artist.name"
-                     :avatar="artist.avatar" :createdAt="artist.createdAt" />
+
+        <div v-if="displayedTracks.length > 0 && !initialLoading">
+          <TrackRow
+              v-for="(track, index) in displayedTracks"
+              :key="track.id"
+              :index="index"
+              :id="track.id"
+              :title="track.title"
+              :artists="track.artists"
+              :listens="track.listens"
+              :genre="track.genre"
+              :release="track.release"
+              :explicit_content="track.explicit_content"
+              :createdAt="track.createdAt"
+              :audio="track.audio"
+          />
         </div>
-        <div v-else-if="!initialLoading && displayedArtists.length === 0">
-          <p>Нет данных об артистах.</p>
+
+        <div v-else-if="!initialLoading && displayedTracks.length === 0">
+          <p>Нет данных о треках.</p>
         </div>
         <div v-if="isLoading && !initialLoading" class="py-4">
           <Loader />
@@ -112,3 +130,4 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
