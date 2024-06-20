@@ -32,7 +32,7 @@ const formattedDate = computed(() => {
 
 // Формируем URL для изображения
 const avatarUrl = computed(() => {
-  return `http://localhost:7000/${props.avatar}`;
+  return `http://188.130.154.92:7000/${props.avatar}`;
 });
 </script>
 

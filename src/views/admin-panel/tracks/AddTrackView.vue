@@ -21,7 +21,7 @@ const artists = ref([]);
 
 const loading = ref(true); // Add a loading state
 
-const baseUrl = 'http://localhost:7000/';
+const baseUrl = 'http://188.130.154.92:7000/';
 
 const customLabel = ({ name, avatar }) => {
   return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;"> ${name}`;

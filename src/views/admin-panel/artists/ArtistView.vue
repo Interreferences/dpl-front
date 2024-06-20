@@ -39,11 +39,11 @@ onMounted(async () => {
 
 // Вычисляемое свойство для URL аватара
 const bannerUrl = computed(() => {
-  return artist.value ? `http://localhost:7000/${artist.value.banner}` : '';
+  return artist.value ? `http://188.130.154.92:7000/${artist.value.banner}` : '';
 });
 
 const avatarUrl = computed(() => {
-  return artist.value ? `http://localhost:7000/${artist.value.avatar}` : '';
+  return artist.value ? `http://188.130.154.92:7000/${artist.value.avatar}` : '';
 });
 
 // Функция для удаления артиста

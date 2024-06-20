@@ -19,7 +19,7 @@ const formattedDate = computed(() => {
 });
 
 const audioUrl = computed(() => {
-  return `http://localhost:7000/${props.audio}`;
+  return `http://188.130.154.92:7000/${props.audio}`;
 });
 </script>
 

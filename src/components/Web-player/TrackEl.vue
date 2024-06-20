@@ -18,7 +18,7 @@ const props = defineProps({
 const playerStore = usePlayerStore();
 
 const coverUrl = computed(() => {
-  return `http://localhost:7000/${props.release.cover}`;
+  return `http://188.130.154.92:7000/${props.release.cover}`;
 });
 
 const play = () => {
@@ -58,8 +58,14 @@ const play = () => {
       </div>
       <span v-if="artists.length === 0">Unknown Artist</span>
     </div>
-    <!-- Release title (hidden on smaller screens) -->
-    <div class="invisible xl:visible xl:w-3/12 2xl:text-2xl 3xl:text-4xl">{{ release.title }}</div>
+
+      <div class="invisible xl:visible xl:w-3/12 2xl:text-2xl 3xl:text-4xl hover:underline">
+        <router-link :to="'/releases/' + release.id">
+          {{ release.title }}
+        </router-link>
+      </div>
+
+
     <!-- Listens (hidden on smaller screens) -->
     <div class="invisible md:visible w-1/6 2xl:text-2xl 3xl:text-4xl">{{ listens }}</div>
   </div>

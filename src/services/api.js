@@ -12,7 +12,7 @@ export const createApiClient = (baseURL) => {
 };
 
 // Создаем клиент для базового URL
-export const apiClient = createApiClient('http://localhost:7000/api');
+export const apiClient = createApiClient('http://188.130.154.92:7000/api');
 
 // Асинхронная функция для создания артиста
 export const createArtist = async (formData) => {

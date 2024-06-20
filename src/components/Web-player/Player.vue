@@ -8,7 +8,7 @@ const duration = ref(0); // Track duration
 
 const coverUrl = computed(() => {
   if (playerStore.currentTrack) {
-    return `http://localhost:7000/${playerStore.currentTrack.release.cover}`;
+    return `http://188.130.154.92:7000/${playerStore.currentTrack.release.cover}`;
   }
   return '';
 });
@@ -59,7 +59,9 @@ watch(
     <div class="flex items-center flex-row">
       <img :src="coverUrl" alt="Cover" class="w-8 h-8 md:w-12 md:h-12 xl:w-16 xl:h-16 2xl:w-24 2xl:h-24 3xl:w-48 3xl:h-48" v-if="playerStore.currentTrack"/>
       <div class="flex flex-col text-xs text-white invisible md:visible md:ml-2 xl:text-base 2xl:text-2xl 3xl:text-4xl" v-if="playerStore.currentTrack">
-        <span>{{ playerStore.currentTrack.title }}</span>
+        <router-link :to="'/tracks/' + playerStore.currentTrack.id">
+          <span>{{ playerStore.currentTrack.title }}</span>
+        </router-link>
         <span>{{ playerStore.currentTrack.artists.map(artist => artist.name).join(', ') }}</span>
       </div>
     </div>
@@ -70,7 +72,7 @@ watch(
         </button>
       </div>
       <div class="flex flex-row">
-        <div class="text-xs xl:text-base 2xl:text-xl 2xl:mr-4 3xl:text-4xl">
+        <div class="mr-2 text-xs xl:text-base 2xl:text-xl 2xl:mr-4 3xl:text-4xl">
           {{ Math.floor(playerStore.currentTime / 60) }}:{{ Math.floor(playerStore.currentTime % 60).toString().padStart(2, '0') }}
         </div>
         <input
@@ -83,7 +85,7 @@ watch(
             v-if="playerStore.currentTrack"
             class="xl:w-64 2xl:text-2xl"
         >
-        <div class="text-xs xl:text-base 2xl:text-xl 2xl:ml-4 3xl:text-4xl">
+        <div class="ml-2 text-xs xl:text-base 2xl:text-xl 2xl:ml-4 3xl:text-4xl">
           {{ Math.floor(duration / 60) }}:{{ Math.floor(duration % 60).toString().padStart(2, '0') }}
         </div>
       </div>

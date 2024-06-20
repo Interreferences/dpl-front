@@ -38,7 +38,7 @@ onMounted(async () => {
 });
 
 const coverUrl = computed(() => {
-  return release.value ? `http://localhost:7000/${release.value.cover}` : '';
+  return release.value ? `http://188.130.154.92:7000/${release.value.cover}` : '';
 });
 
 const handleDeleteRelease = async () => {

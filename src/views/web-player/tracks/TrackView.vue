@@ -67,7 +67,7 @@ const formattedText = computed(() => {
         <div class="flex flex-col">
 
           <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-            Треки
+            Трек
           </div>
 
           <div class="w-full flex items-center justify-between border-b border-gray-300 hover:bg-gray-100 py-4">

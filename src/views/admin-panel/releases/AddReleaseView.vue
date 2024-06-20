@@ -21,12 +21,12 @@ const tracksWithoutReleases = ref([]);
 
 const loading = ref(true); // Add a loading state
 
-const baseUrl = 'http://localhost:7000/';
+const baseUrl = 'http://188.130.154.92:7000/';
 
 const mounted = ref(false);
 
 const customLabel = ({ name, avatar }) => {
-  return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;"> ${name}`;
+  return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 60px; height: 60px; margin-right: 10px; border-radius: 50%;"> ${name}`;
 };
 
 const loadAllLabels = async () => {
@@ -157,7 +157,7 @@ onMounted(async () => {
                 track-by="id"
                 :custom-label="customLabel"
                 placeholder="Выберите артистов"
-                class="w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2 md:text-xl md:p-2 2xl:text-2xl 2xl:p-4 3xl:text-4xl 3xl:p-8"
+                class="w-full bg-white border flex-col border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2 md:text-xl md:p-2 2xl:text-2xl 2xl:p-4 3xl:text-4xl 3xl:p-8"
             >
               <template #option="{ option }">
                 <div class="flex items-center w-full m-2 hover:bg-gray-100">

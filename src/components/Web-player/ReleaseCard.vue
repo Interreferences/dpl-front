@@ -18,7 +18,7 @@ const props = defineProps({
 
 // Формируем URL для изображения
 const coverUrl = computed(() => {
-  return `http://localhost:7000/${props.cover}`;
+  return `http://188.130.154.92:7000/${props.cover}`;
 });
 </script>
 
