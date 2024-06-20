@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import WPMainView from "@/views/web-player/MainView.vue";
-import APMainView from "@/views/admin-panel/MainView.vue";
 import APArtistsView from "@/views/admin-panel/artists/ArtistsView.vue";
 import AddArtistView from "@/views/admin-panel/artists/AddArtistView.vue";
 import APGenresView from "@/views/admin-panel/genres/GenresView.vue";
@@ -24,7 +23,6 @@ import EditLabelView from "@/views/admin-panel/labels/EditLabelView.vue";
 import EditReleaseView from "@/views/admin-panel/releases/EditReleaseView.vue";
 import EditTrackView from "@/views/admin-panel/tracks/EditTrackView.vue";
 import WPReleasesView from "@/views/web-player/releases/ReleasesView.vue";
-import WPGenresView from "@/views/web-player/genres/GenresView.vue";
 import WPTrackView from "@/views/web-player/tracks/TrackView.vue";
 import WPReleaseView from "@/views/web-player/releases/ReleaseView.vue";
 import WPArtistView from "@/views/web-player/artists/ArtistView.vue";
@@ -37,16 +35,11 @@ const router = createRouter({
       component: WPMainView
     },
     {
-      path: '/admin-panel/',
-      component: APMainView
-    },
-    {
       path: '/admin-panel/artists',
       component: APArtistsView
     },
     {
-      path: '/admin-panel/tracks/edit/
-      ',
+      path: '/admin-panel/tracks/edit/',
       component: EditTrackView,
       props: true
     },
@@ -55,32 +48,27 @@ const router = createRouter({
       component: AddArtistView
     },
     {
-      path: '/admin-panel/artists/edit/
-      ',
+      path: '/admin-panel/artists/edit/',
       component: EditArtist,
       props: true
     },
     {
-      path: '/admin-panel/genres/edit/
-      ',
+      path: '/admin-panel/genres/edit/',
       component: EditGenreView,
       props: true
     },
     {
-      path: '/admin-panel/labels/edit/
-      ',
+      path: '/admin-panel/labels/edit/',
       component: EditLabelView,
       props: true
     },
     {
-      path: '/admin-panel/releases/edit/
-      ',
+      path: '/admin-panel/releases/edit/',
       component: EditReleaseView,
       props: true
     },
     {
-      path: '/admin-panel/artists/
-      ',
+      path: '/admin-panel/artists/',
       component: APArtistView
     },
     {
@@ -108,23 +96,19 @@ const router = createRouter({
       component: APReleasesView
     },
     {
-      path: '/admin-panel/genres/
-      ',
+      path: '/admin-panel/genres/',
       component: GenreView
     },
     {
-      path: '/admin-panel/labels/
-      ',
+      path: '/admin-panel/labels/',
       component: LabelView
     },
     {
-      path: '/admin-panel/releases/
-      ',
+      path: '/admin-panel/releases/',
       component: APReleaseView
     },
     {
-      path: '/admin-panel/tracks/
-      ',
+      path: '/admin-panel/tracks/',
       component: APTrackView
     },
     {
@@ -148,22 +132,15 @@ const router = createRouter({
       component: WPReleasesView
     },
     {
-      path: '/genres',
-      component: WPGenresView
-    },
-    {
-      path: '/tracks/
-      ',
+      path: '/tracks/',
       component: WPTrackView
     },
     {
-      path: '/releases/
-      ',
+      path: '/releases/',
       component: WPReleaseView
     },
     {
-      path: '/artists/
-      ',
+      path: '/artists/',
       component: WPArtistView
     },
   ]
