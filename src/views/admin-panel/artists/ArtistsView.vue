@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { getArtists } from "@/services/api"; // Импортируем функцию getArtists
+import {getArtists, searchArtistsByName} from "@/services/api"; // Импортируем функцию getArtists
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import ArtistRow from "@/components/Admin-panel/ArtistRow.vue";
@@ -13,13 +13,38 @@ const limit = ref(10); // Количество записей на порцию
 const isLoading = ref(false); // Состояние загрузки данных
 const initialLoading = ref(true); // Состояние первой загрузки данных
 const scrollContainer = ref(null); // Ссылка на элемент прокрутки
-
+const searchQuery = ref(''); // Значение поиска
 const loadAllArtists = async () => {
   try {
     const data = await getArtists();
     return data;
   } catch (error) {
     throw error;
+  }
+};
+
+const searchArtists = async () => {
+  if (!searchQuery.value) return;
+  try {
+    const data = await searchArtistsByName(searchQuery.value);
+    artists.value = data;
+    displayedArtists.value = [];
+    currentIndex.value = 0;
+    loadMoreArtists();
+  } catch (error) {
+    console.error('Ошибка при поиске:', error);
+  }
+};
+
+const resetArtists = async () => {
+  searchQuery.value = '';
+  try {
+    artists.value = await loadAllArtists();
+    displayedArtists.value = [];
+    currentIndex.value = 0;
+    loadMoreArtists();
+  } catch (error) {
+    console.error('Ошибка при сбросе:', error);
   }
 };
 
@@ -69,11 +94,11 @@ onBeforeUnmount(() => {
         <div class="flex flex-col" v-if="!initialLoading">
           <div class="flex flex-row justify-between p-2 md:p-4 2xl:p-8 w-full">
             <div class="flex flex-row w-6/12">
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+              <button @click="resetArtists" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
                 <i class="fa-solid fa-angle-left"></i>
               </button>
-              <input type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
+              <input v-model="searchQuery" type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
+              <button @click="searchArtists" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>

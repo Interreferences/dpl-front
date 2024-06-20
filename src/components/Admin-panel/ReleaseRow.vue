@@ -9,7 +9,6 @@ const props = defineProps({
   artists: { type: Array, required: true },
   labels: { type: Array, required: true },
   releasesType: { type: Object, required: true },
-  published: { type: Boolean, required: true },
   releaseDate: { type: String, required: true }
 });
 
@@ -33,7 +32,9 @@ const coverUrl = computed(() => {
       <p class="w-3/5 text-center md:w-2/5 lg:w-1/6 lg:text-left xl:text-xl 2xl:w-2/12 3xl:text-4xl">{{ title }}</p>
       <div class="hidden md:block md:w-1/5 lg:w-2/6 xl:text-xl 2xl:w-3/12 3xl:text-4xl">
         <template v-for="(artist, artistIndex) in artists" :key="artist.id">
-          <span>{{ artist.name }}</span>
+          <router-link :to="'/admin-panel/artists/' + artist.id">
+            <span class="hover:underline">{{ artist.name }}</span>
+          </router-link>
           <span v-if="artistIndex < artists.length - 1">, </span>
         </template>
         <span v-if="artists.length === 0">Unknown Artist</span>
@@ -45,7 +46,6 @@ const coverUrl = computed(() => {
         </template>
         <span v-if="labels.length === 0">Unknown Artist</span>
       </div>
-      <p class="hidden 2xl:block 2xl:w-1/12 2xl:text-xl 3xl:text-4xl">{{ published ? 'Yes' : 'No' }}</p>
       <p class="hidden lg:block lg:w-1/6 xl:text-xl 2xl:w-1/12 3xl:text-4xl">{{ releaseDate }}</p>
       <p class="hidden 2xl:w-1/12 2xl:text-xl 3xl:text-4xl" >{{ releasesType.title }}</p>
     </div>

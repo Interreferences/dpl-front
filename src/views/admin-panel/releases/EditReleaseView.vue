@@ -4,9 +4,13 @@ import Loader from "@/components/Loader.vue";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {onMounted, ref} from "vue";
-import {createRelease, getArtists, getLabels, getTracksWithoutReleases} from "@/services/api.js";
+import {getArtists, getLabels, getTracksWithoutReleases, updateRelease} from "@/services/api.js";
 import Multiselect from "vue-multiselect";
-import router from "@/router/index.js";
+import {useRoute, useRouter} from "vue-router";
+
+const route = useRoute(); // Получаем маршрут
+const router = useRouter();
+const releaseId = ref(route.params.id);
 
 const title = ref('');
 const cover = ref(null);
@@ -19,11 +23,7 @@ const labels = ref([]);
 const artists = ref([]);
 const tracksWithoutReleases = ref([]);
 
-const loading = ref(true); // Add a loading state
-
 const baseUrl = 'http://localhost:7000/';
-
-const mounted = ref(false);
 
 const customLabel = ({ name, avatar }) => {
   return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;"> ${name}`;
@@ -61,7 +61,7 @@ const handleSubmit = () => {
     formData.append('labelIds', id);
   });
 
-  createRelease(formData)
+  updateRelease(releaseId.value, formData)
       .then(response => {
         console.log('Success:', response.data);
         router.push('/admin-panel/releases');
@@ -101,8 +101,6 @@ onMounted(async () => {
     console.log(tracksWithoutReleases);
   } catch (error) {
     console.error('Error loading data:', error);
-  } finally {
-    loading.value = false; // Set loading to false after data is fetched
   }
 
   new Dropzone("#cover-dropzone", {
@@ -127,7 +125,7 @@ onMounted(async () => {
     <div class="flex flex-row overflow-hidden">
       <Sidebar />
       <div class="flex flex-col w-full p-4 overflow-y-scroll z-2">
-        <h1 class="text-2xl my-4 font-bold md:text-4xl 2xl:my-8 2xl:text-6xl 3xl:text-7xl">Добавить Релиз</h1>
+        <h1 class="text-2xl my-4 font-bold md:text-4xl 2xl:my-8 2xl:text-6xl 3xl:text-7xl">Редактировать Релиз</h1>
 
         <form @submit.prevent="handleSubmit" class="flex flex-col space-y-4 3xl:space-y-12">
 
@@ -136,7 +134,7 @@ onMounted(async () => {
                    class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8">Название</label>
             <input type="text" id="title" v-model="title"
                    class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2 block md:text-xl md:p-2 2xl:text-2xl 2xl:p-4 3xl:text-4xl 3xl:p-8"
-                   required/>
+                   />
           </div>
 
           <div>
@@ -215,7 +213,7 @@ onMounted(async () => {
           <div>
             <button type="submit"
                     class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:text-xl 2xl:text-2xl 2xl:py-4 2xl:px-8 3xl:text-4xl 3xl:py-8 3xl:px-8">
-              Добавить
+              Сохранить
             </button>
           </div>
         </form>

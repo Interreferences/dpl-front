@@ -10,11 +10,10 @@ import HeaderLink from "@/components/Header/HeaderLink.vue";
       </div>
     </router-link>
 
-    <ul class="flex flex-row space-x-4">
-      <HeaderLink text="Главная" to="/" icon="fas fa-home" />
-      <HeaderLink text="Веб-плеер" to="/web-player/"  icon="fa-solid fa-headphones" />
-      <HeaderLink text="Админ-панель" to="/admin-panel/" icon="fa-solid fa-gear" />
-    </ul>
+<!--    <ul class="flex flex-row space-x-4">-->
+<!--      <HeaderLink text="Веб-плеер" to="/"  icon="fa-solid fa-headphones" />-->
+<!--      <HeaderLink text="Админ-панель" to="/admin-panel/" icon="fa-solid fa-gear" />-->
+<!--    </ul>-->
   </header>
 </template>
 

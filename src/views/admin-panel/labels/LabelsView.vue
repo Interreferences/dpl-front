@@ -2,7 +2,7 @@
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {onBeforeUnmount, onMounted, ref} from "vue";
-import {getLabels} from "@/services/api.js";
+import {getLabels, searchLabelsByName} from "@/services/api.js";
 import LabelRow from "@/components/Admin-panel/LabelRow.vue";
 import Loader from "@/components/Loader.vue";
 
@@ -13,6 +13,7 @@ const limit = ref(10); // Количество записей на порцию
 const isLoading = ref(false); // Состояние загрузки данных
 const initialLoading = ref(true); // Состояние первой загрузки данных
 const scrollContainer = ref(null); // Ссылка на элемент прокрутки
+const searchQuery = ref(''); // Значение поиска
 
 const loadAllLabels = async () => {
   try {
@@ -20,6 +21,31 @@ const loadAllLabels = async () => {
     return data;
   } catch (error) {
     throw error;
+  }
+};
+
+const searchLabels = async () => {
+  if (!searchQuery.value) return;
+  try {
+    const data = await searchLabelsByName(searchQuery.value);
+    labels.value = data;
+    displayedLabels.value = [];
+    currentIndex.value = 0;
+    loadMoreLabels();
+  } catch (error) {
+    console.error('Ошибка при поиске:', error);
+  }
+};
+
+const resetLabels = async () => {
+  searchQuery.value = '';
+  try {
+    labels.value = await loadAllLabels();
+    displayedLabels.value = [];
+    currentIndex.value = 0;
+    loadMoreLabels();
+  } catch (error) {
+    console.error('Ошибка при сбросе:', error);
   }
 };
 
@@ -77,11 +103,11 @@ onBeforeUnmount(() => {
 
             <div class="flex flex-row w-6/12">
 
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+              <button @click="resetLabels" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
                 <i class="fa-solid fa-angle-left"></i>
               </button>
-              <input type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
+              <input v-model="searchQuery" type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
+              <button @click="searchLabels" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
 

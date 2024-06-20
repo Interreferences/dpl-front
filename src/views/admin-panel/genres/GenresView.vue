@@ -2,7 +2,7 @@
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {ref, onMounted, onBeforeUnmount} from "vue";
-import {getGenres} from "@/services/api.js";
+import {getGenres, searchGenresByName} from "@/services/api.js";
 import GenreRow from "@/components/Admin-panel/GenreRow.vue";
 import Loader from "@/components/Loader.vue";
 
@@ -13,6 +13,7 @@ const limit = ref(10); // Количество записей на порцию
 const isLoading = ref(false); // Состояние загрузки данных
 const initialLoading = ref(true); // Состояние первой загрузки данных
 const scrollContainer = ref(null); // Ссылка на элемент прокрутки
+const searchQuery = ref(''); // Значение поиска
 
 const loadAllGenres = async () => {
   try {
@@ -22,6 +23,31 @@ const loadAllGenres = async () => {
     throw error;
   }
 }
+
+const searchGenres = async () => {
+  if (!searchQuery.value) return;
+  try {
+    const data = await searchGenresByName(searchQuery.value);
+    genres.value = data;
+    displayedGenres.value = [];
+    currentIndex.value = 0;
+    loadMoreGenres();
+  } catch (error) {
+    console.error('Ошибка при поиске:', error);
+  }
+};
+
+const resetGenres = async () => {
+  searchQuery.value = '';
+  try {
+    genres.value = await loadAllGenres();
+    displayedGenres.value = [];
+    currentIndex.value = 0;
+    loadMoreGenres();
+  } catch (error) {
+    console.error('Ошибка при сбросе:', error);
+  }
+};
 
 const loadMoreGenres = () => {
   if (isLoading.value || currentIndex.value >= genres.value.length) return;
@@ -45,7 +71,6 @@ const handleScroll = () => {
 onMounted(async () => {
   try {
     genres.value = await loadAllGenres();
-    console.log(genres);
     loadMoreGenres();
     scrollContainer.value.addEventListener('scroll', handleScroll);
     initialLoading.value = false; // Завершаем начальную загрузку
@@ -71,11 +96,11 @@ onBeforeUnmount(() => {
         <div class="flex flex-col" v-if="!initialLoading">
           <div class="flex flex-row justify-between p-2 md:p-4 2xl:p-8 w-full">
             <div class="flex flex-row w-6/12">
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+              <button @click="resetGenres" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
                 <i class="fa-solid fa-angle-left"></i>
               </button>
-              <input type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
-              <button class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
+              <input v-model="searchQuery" type="text" placeholder="Поиск" class="w-20 border-2 border-gray-300 mx-4 rounded-lg px-2 md:w-48 xl:w-64 2xl:w-auto 2xl:mx-8 2xl:text-3xl 3xl:w-3/5" />
+              <button @click="searchGenres" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-x 3xl:text-3xl">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>
