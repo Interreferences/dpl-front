@@ -1,20 +1,20 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import {deleteGenre, getGenreById} from "@/services/api"; // Импортируем функцию getArtistById
+import {deleteGenre, getGenreById} from "@/services/genres.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
 import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import Modal from "@/components/Admin-panel/Modal.vue";
 
-const genre = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
+const genre = ref(null);
+const initialLoading = ref(true);
 const showDeleteModal = ref(false);
 
 const router = useRouter();
-const route = useRoute(); // Получаем маршрут
-const genreId = route.params.id; // Извлекаем id из параметров маршрута
+const route = useRoute();
+const genreId = route.params.id;
 
 const loadGenre = async (id) => {
   try {
@@ -28,8 +28,7 @@ const loadGenre = async (id) => {
 onMounted(async () => {
   try {
     genre.value = await loadGenre(genreId);
-    console.log(genre);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
@@ -38,7 +37,7 @@ onMounted(async () => {
 const handleDeleteGenre = async () => {
   try {
     await deleteGenre(genreId);
-    router.push('/admin-panel/genres'); // Перенаправляем пользователя после удаления
+    router.push('/admin-panel/genres');
   } catch (error) {
     console.error('Ошибка при удалении:', error);
   }

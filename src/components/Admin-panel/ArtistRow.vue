@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, computed } from 'vue';
+import {defineProps, computed} from 'vue';
 
 const props = defineProps({
   index: {
@@ -18,21 +18,10 @@ const props = defineProps({
     type: String,
     required: true
   },
-  createdAt: {
-    type: String,
-    required: true
-  }
 });
 
-// Функция для форматирования даты
-const formattedDate = computed(() => {
-  const date = new Date(props.createdAt);
-  return date.toLocaleString();
-});
-
-// Формируем URL для изображения
 const avatarUrl = computed(() => {
-  return `http://188.130.154.92:7000/${props.avatar}`;
+  return `http://185.159.128.11:5000/${props.avatar}`;
 });
 </script>
 
@@ -41,10 +30,10 @@ const avatarUrl = computed(() => {
     <div class="w-full flex items-center border-b border-gray-300 hover:bg-gray-100">
       <p class="w-1/5 text-center md:w-2/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">{{ index }}</p>
       <div class="w-2/5 py-2 md:w-2/12 xl:py-4 2xl:py-8 3x:py-12">
-        <img :src="avatarUrl" alt="Avatar" class="w-16 h-16 rounded-full xl:w-32 xl:h-32 2xl:w-64 2xl:h-64 3xl:w-96 3xl:h-96">
+        <img :src="avatarUrl" alt="Avatar"
+             class="w-16 h-16 rounded-full xl:w-32 xl:h-32 2xl:w-64 2xl:h-64 3xl:w-96 3xl:h-96">
       </div>
       <p class="w-2/5 md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">{{ name }}</p>
-      <p class="hidden md:block md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">{{ formattedDate }}</p>
     </div>
   </router-link>
 </template>

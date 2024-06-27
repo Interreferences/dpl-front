@@ -1,147 +1,147 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import WPMainView from "@/views/web-player/MainView.vue";
-import APArtistsView from "@/views/admin-panel/artists/ArtistsView.vue";
-import AddArtistView from "@/views/admin-panel/artists/AddArtistView.vue";
-import APGenresView from "@/views/admin-panel/genres/GenresView.vue";
-import AddGenreView from "@/views/admin-panel/genres/AddGenreView.vue";
-import AddLabelView from "@/views/admin-panel/labels/AddLabelView.vue";
-import APLabelsView from "@/views/admin-panel/labels/LabelsView.vue";
-import APTracksView from "@/views/admin-panel/tracks/TracksView.vue";
-import AddTrackView from "@/views/admin-panel/tracks/AddTrackView.vue";
-import AddReleaseView from "@/views/admin-panel/releases/AddReleaseView.vue";
-import APReleasesView from "@/views/admin-panel/releases/ReleasesView.vue";
-import APArtistView from "@/views/admin-panel/artists/ArtistView.vue";
-import GenreView from "@/views/admin-panel/genres/GenreView.vue";
-import LabelView from "@/views/admin-panel/labels/LabelView.vue";
-import APReleaseView from "@/views/admin-panel/releases/ReleaseView.vue";
-import APTrackView from "@/views/admin-panel/tracks/TrackView.vue";
-import WPArtistsView from "@/views/web-player/artists/ArtistsView.vue";
-import WPTracksView from "@/views/web-player/tracks/TracksView.vue";
-import EditArtist from "@/views/admin-panel/artists/EditArtist.vue";
-import EditGenreView from "@/views/admin-panel/genres/EditGenreView.vue";
-import EditLabelView from "@/views/admin-panel/labels/EditLabelView.vue";
-import EditReleaseView from "@/views/admin-panel/releases/EditReleaseView.vue";
-import EditTrackView from "@/views/admin-panel/tracks/EditTrackView.vue";
-import WPReleasesView from "@/views/web-player/releases/ReleasesView.vue";
-import WPTrackView from "@/views/web-player/tracks/TrackView.vue";
-import WPReleaseView from "@/views/web-player/releases/ReleaseView.vue";
-import WPArtistView from "@/views/web-player/artists/ArtistView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      component: WPMainView
+      path: '/auth/login',
+      name: 'Login',
+      component: () => import('@/views/auth/LoginView.vue')
     },
     {
-      path: '/admin-panel/artists',
-      component: APArtistsView
+      path: '/auth/registration',
+      name: 'Registration',
+      component: () => import('@/views/auth/RegistrationView.vue')
     },
     {
-      path: '/admin-panel/tracks/edit/',
-      component: EditTrackView,
-      props: true
+      path: '/web-player/',
+      name: 'IndexWeb-Player',
+      component: () => import('@/views/web-player/MainView.vue')
     },
     {
-      path: '/admin-panel/artists/create',
-      component: AddArtistView
+      path: '/web-player/artists',
+      name: 'Artists-Player',
+      component: () => import('@/views/web-player/artists/ArtistsView.vue')
     },
     {
-      path: '/admin-panel/artists/edit/',
-      component: EditArtist,
-      props: true
+      path: '/web-player/artists/:id',
+      name: 'Artist-Player',
+      component: () => import('@/views/web-player/artists/ArtistView.vue')
     },
     {
-      path: '/admin-panel/genres/edit/',
-      component: EditGenreView,
-      props: true
+      path: '/web-player/releases',
+      name: 'Releases-Player',
+      component: () => import('@/views/web-player/releases/ReleasesView.vue')
     },
     {
-      path: '/admin-panel/labels/edit/',
-      component: EditLabelView,
-      props: true
+      path: '/web-player/releases/:id',
+      name: 'Release-Player',
+      component: () => import('@/views/web-player/releases/ReleaseView.vue')
     },
     {
-      path: '/admin-panel/releases/edit/',
-      component: EditReleaseView,
-      props: true
-    },
-    {
-      path: '/admin-panel/artists/',
-      component: APArtistView
-    },
-    {
-      path: '/admin-panel/genres',
-      component: APGenresView
-    },
-    {
-      path: '/admin-panel/genres/create',
-      component: AddGenreView
-    },
-    {
-      path: '/admin-panel/labels/create',
-      component: AddLabelView
+      path: '/web-player/tracks',
+      name: 'Tracks-Player',
+      component: () => import('@/views/web-player/tracks/TracksView.vue')
     },
     {
       path: '/admin-panel/labels',
-      component: APLabelsView
+      name: 'Labels',
+      component: () => import('@/views/admin-panel/labels/LabelsView.vue')
     },
     {
-      path: '/admin-panel/releases/create',
-      component: AddReleaseView
+      path: '/admin-panel/labels/create',
+      name: 'AddLabel',
+      component: () => import('@/views/admin-panel/labels/AddLabelView.vue')
     },
     {
-      path: '/admin-panel/releases',
-      component: APReleasesView
+      path: '/admin-panel/labels/:id',
+      name: 'Label',
+      component: () => import('@/views/admin-panel/labels/LabelView.vue')
+    },
+    {
+      path: '/admin-panel/labels/edit/:id',
+      name: 'EditLabel',
+      component: () => import('@/views/admin-panel/labels/EditLabelView.vue')
     },
     {
       path: '/admin-panel/genres/',
-      component: GenreView
+      name: 'Genres',
+      component: () => import('@/views/admin-panel/genres/GenresView.vue')
     },
     {
-      path: '/admin-panel/labels/',
-      component: LabelView
+      path: '/admin-panel/genres/edit/:id',
+      name: 'EditGenre',
+      component: () => import('@/views/admin-panel/genres/EditGenreView.vue')
     },
     {
-      path: '/admin-panel/releases/',
-      component: APReleaseView
+      path: '/admin-panel/genres/create',
+      name: 'AddGenre',
+      component: () => import('@/views/admin-panel/genres/AddGenreView.vue')
     },
     {
-      path: '/admin-panel/tracks/',
-      component: APTrackView
+      path: '/admin-panel/genres/:id',
+      name: 'Genre',
+      component: () => import('@/views/admin-panel/genres/GenreView.vue')
     },
+    {
+      path: '/admin-panel/artists/create',
+      name: 'AddArtist',
+      component: () => import('@/views/admin-panel/artists/AddArtistView.vue')
+    },
+    {
+      path: '/admin-panel/artists',
+      name: 'Artists',
+      component: () => import('@/views/admin-panel/artists/ArtistsView.vue')
+    },
+    {
+      path: '/admin-panel/artists/:id',
+      name: 'Artist',
+      component: () => import('@/views/admin-panel/artists/ArtistView.vue')
+    },
+    {
+      path: '/admin-panel/artists/edit/:id',
+      name: 'EditArtist',
+      component: () => import('@/views/admin-panel/artists/EditArtist.vue')
+    },  
     {
       path: '/admin-panel/tracks',
-      component: APTracksView
+      name: 'Tracks',
+      component: () => import('@/views/admin-panel/tracks/TracksView.vue')
     },
     {
       path: '/admin-panel/tracks/create',
-      component: AddTrackView
+      name: 'AddTrack',
+      component: () => import('@/views/admin-panel/tracks/AddTrackView.vue')
     },
     {
-      path: '/artists',
-      component: WPArtistsView
+      path: '/admin-panel/tracks/:id',
+      name: 'Track',
+      component: () => import('@/views/admin-panel/tracks/TrackView.vue')
     },
     {
-      path: '/tracks',
-      component: WPTracksView
+      path: '/admin-panel/tracks/edit/:id',
+      name: 'EditTrack',
+      component: () => import('@/views/admin-panel/tracks/EditTrackView.vue')
     },
     {
-      path: '/releases',
-      component: WPReleasesView
+      path: '/admin-panel/releases',
+      name: 'Releases',
+      component: () => import('@/views/admin-panel/releases/ReleasesView.vue')
     },
     {
-      path: '/tracks/',
-      component: WPTrackView
+      path: '/admin-panel/releases/create',
+      name: 'AddRelease',
+      component: () => import('@/views/admin-panel/releases/AddReleaseView.vue')
     },
     {
-      path: '/releases/',
-      component: WPReleaseView
+      path: '/admin-panel/releases/:id',
+      name: 'Release',
+      component: () => import('@/views/admin-panel/releases/ReleaseView.vue')
     },
     {
-      path: '/artists/',
-      component: WPArtistView
+      path: '/admin-panel/releases/edit/:id',
+      name: 'EditRelease',
+      component: () => import('@/views/admin-panel/releases/EditReleaseView.vue')
     },
   ]
 })

@@ -2,10 +2,10 @@
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import { ref } from "vue";
-import {createGenre, updateGenre} from "@/services/api.js";
+import {updateGenre} from "@/services/genres.js";
 import {useRoute, useRouter} from "vue-router";
 
-const route = useRoute(); // Получаем маршрут
+const route = useRoute();
 const router = useRouter();
 const genreId = ref(route.params.id);
 const name = ref('');
@@ -16,12 +16,10 @@ const handleSubmit = () => {
 
   updateGenre(genreId.value, formData)
       .then(response => {
-        console.log('Success:', response.data);
-        // Перенаправление на страницу жанров в админ-панели
         router.push('/admin-panel/genres');
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
       });
 };
 </script>

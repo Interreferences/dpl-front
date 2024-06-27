@@ -1,88 +1,80 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import {getArtists, searchArtistsByName} from "@/services/api"; // Импортируем функцию getArtists
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
+import {getArtists, searchArtistsByName} from "@/services/artists.js";
 import ArtistRow from "@/components/Admin-panel/ArtistRow.vue";
 import Loader from "@/components/Loader.vue";
+import { useUserStore } from '@/stores/user.js';
+import { useRouter } from 'vue-router';
 
-const artists = ref([]); // Полный список артистов
-const displayedArtists = ref([]); // Отображаемая порция артистов
-const currentIndex = ref(0); // Текущий индекс
-const limit = ref(10); // Количество записей на порцию
-const isLoading = ref(false); // Состояние загрузки данных
-const initialLoading = ref(true); // Состояние первой загрузки данных
-const scrollContainer = ref(null); // Ссылка на элемент прокрутки
-const searchQuery = ref(''); // Значение поиска
-const loadAllArtists = async () => {
+const userStore = useUserStore();
+const router = useRouter();
+
+const artists = ref([]);
+const isLoading = ref(true);
+const searchQuery = ref('');
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+onBeforeMount(() => {
+  if (!userStore.isAuthenticated() || !isAdmin.value) {
+    router.push('/auth/login');
+  }
+});
+
+const isAdmin = computed(() => {
+  return userStore.isAdmin();
+});
+
+const loadAllArtists = async (page = 1, limit = 10) => {
   try {
-    const data = await getArtists();
-    return data;
+    isLoading.value = true;
+    const data = await getArtists(page, limit);
+    artists.value = data.artists;
+    totalPages.value = data.maxPages;
   } catch (error) {
-    throw error;
+    console.error('Ошибка при загрузке:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const searchArtists = async () => {
-  if (!searchQuery.value) return;
   try {
-    const data = await searchArtistsByName(searchQuery.value);
-    artists.value = data;
-    displayedArtists.value = [];
-    currentIndex.value = 0;
-    loadMoreArtists();
+    isLoading.value = true;
+    const data = await searchArtistsByName(searchQuery.value, currentPage.value);
+    artists.value = data.artists;
+    totalPages.value = Math.ceil(data.total / 10); // Assuming 10 labels per page
   } catch (error) {
-    console.error('Ошибка при поиске:', error);
+    console.error('Ошибка при поиске лейблов:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const resetArtists = async () => {
   searchQuery.value = '';
-  try {
-    artists.value = await loadAllArtists();
-    displayedArtists.value = [];
-    currentIndex.value = 0;
-    loadMoreArtists();
-  } catch (error) {
-    console.error('Ошибка при сбросе:', error);
+  currentPage.value = 1;
+  await loadAllArtists(currentPage.value);
+};
+
+const nextPage = async () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    await loadAllArtists(currentPage.value);
   }
 };
 
-const loadMoreArtists = () => {
-  if (isLoading.value || currentIndex.value >= artists.value.length) return;
-
-  isLoading.value = true;
-  const newArtists = artists.value.slice(currentIndex.value, currentIndex.value + limit.value);
-  displayedArtists.value = [...displayedArtists.value, ...newArtists];
-  currentIndex.value += limit.value;
-  isLoading.value = false;
-};
-
-const handleScroll = () => {
-  if (!scrollContainer.value) return;
-
-  const container = scrollContainer.value;
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    loadMoreArtists();
+const previousPage = async () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    await loadAllArtists(currentPage.value);
   }
 };
 
-// Загружаем всех артистов при монтировании компонента и отображаем первую порцию
 onMounted(async () => {
-  try {
-    artists.value = await loadAllArtists();
-    loadMoreArtists(); // Отображаем первую порцию данных
-    scrollContainer.value.addEventListener('scroll', handleScroll);
-    initialLoading.value = false; // Завершаем начальную загрузку
-  } catch (error) {
-    console.error('Ошибка при загрузке:', error);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener('scroll', handleScroll);
-  }
+  await loadAllArtists(currentPage.value);
 });
 </script>
 <template>
@@ -90,8 +82,8 @@ onBeforeUnmount(() => {
     <Header />
     <div class="flex flex-row overflow-hidden">
       <Sidebar />
-      <div ref="scrollContainer" class="flex flex-col w-full overflow-y-scroll">
-        <div class="flex flex-col" v-if="!initialLoading">
+      <div class="flex flex-col w-full overflow-y-scroll">
+        <div class="flex flex-col" v-if="!isLoading">
           <div class="flex flex-row justify-between p-2 md:p-4 2xl:p-8 w-full">
             <div class="flex flex-row w-6/12">
               <button @click="resetArtists" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
@@ -113,25 +105,30 @@ onBeforeUnmount(() => {
             Артисты
           </div>
         </div>
-        <div class="w-full flex items-center border-b border-gray-300" v-if="!initialLoading">
+        <div class="w-full flex items-center border-b border-gray-300" v-if="!isLoading">
           <p class="w-1/5 text-center md:w-2/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">#</p>
           <div class="w-2/5 py-2 md:w-2/12 xl:py-4 2xl:py-8 3x:py-12"></div>
           <p class="w-2/5 md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Псевдоним</p>
-          <p class="hidden md:block md:w-4/12 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Дата создания</p>
         </div>
-        <div v-if="displayedArtists.length > 0 && !initialLoading">
-          <ArtistRow v-for="(artist, index) in displayedArtists" :key="artist.id"
+        <div v-if="artists.length > 0 && !isLoading">
+          <ArtistRow v-for="(artist, index) in artists" :key="artist.id"
                      :index="index + 1" :id="artist.id" :name="artist.name"
-                     :avatar="artist.avatar" :createdAt="artist.createdAt" />
+                     :avatar="artist.avatar" />
         </div>
-        <div v-else-if="!initialLoading && displayedArtists.length === 0">
+        <div v-else-if="!isLoading && artists.length === 0">
           <p>Нет данных об артистах.</p>
         </div>
-        <div v-if="isLoading && !initialLoading" class="py-4">
+        <div v-if="isLoading" class="py-4">
           <Loader />
         </div>
-        <div v-if="initialLoading">
-          <Loader />
+        <div class="flex items-center self-center mt-4 py-12">
+          <button @click="previousPage" :disabled="currentPage === 1" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+          <span class="mx-12">{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-right"></i>
+          </button>
         </div>
       </div>
     </div>

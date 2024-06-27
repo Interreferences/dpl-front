@@ -1,7 +1,7 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRoute} from 'vue-router';
-import {deleteTrack, getTrackById} from "@/services/api"; // Импортируем функцию getArtistById
+import {deleteTrack, getTrackById} from "@/services/tracks.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
@@ -11,12 +11,12 @@ import ArtistRow from "@/components/Admin-panel/ArtistRow.vue";
 import router from "@/router/index.js";
 import Modal from "@/components/Admin-panel/Modal.vue";
 
-const track = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
+const track = ref(null);
+const initialLoading = ref(true);
 const showDeleteModal = ref(false);
 
-const route = useRoute(); // Получаем маршрут
-const trackId = route.params.id; // Извлекаем id из параметров маршрута
+const route = useRoute();
+const trackId = route.params.id;
 
 const loadTrack = async (id) => {
   try {
@@ -27,30 +27,20 @@ const loadTrack = async (id) => {
   }
 };
 
-const getYouTubeVideoId = (url) => {
-  const urlObj = new URL(url);
-  return urlObj.searchParams.get('v');
-};
-
-// Загружаем артиста при монтировании компонента
 onMounted(async () => {
   try {
     track.value = await loadTrack(trackId);
     console.log(track);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
 });
 
-const formattedText = computed(() => {
-  return track.value ? track.value.text.replace(/\n/g, '<br>') : '';
-});
-
 const handleDeleteTrack = async () => {
   try {
     await deleteTrack(trackId);
-    router.push('/admin-panel/tracks'); // Перенаправляем пользователя после удаления
+    router.push('/admin-panel/tracks');
   } catch (error) {
     console.error('Ошибка при удалении:', error);
   }
@@ -75,11 +65,11 @@ const handleDeleteTrack = async () => {
               <button @click="showDeleteModal = true" class="mt-2 px-2 py-2 bg-red-600 text-white rounded mr-4 text-xs md:text-lg 2xl:text-2xl 2xl:px-4 3xl:text-4xl 3xl:px-6 3xl:py-4">
                 <i class="fa-solid fa-trash"></i>
               </button>
-<!--              <router-link :to="`/admin-panel/tracks/edit/${trackId}`">-->
-<!--                <button class="mt-2 px-2 py-2 bg-orange-600 text-white rounded mr-4 text-xs md:text-lg 2xl:text-2xl 2xl:px-4 3xl:text-4xl 3xl:px-6 3xl:py-4">-->
-<!--                  <i class="fa-solid fa-pen-to-square"></i>-->
-<!--                </button>-->
-<!--              </router-link>-->
+              <router-link :to="`/admin-panel/tracks/edit/${trackId}`">
+                <button class="mt-2 px-2 py-2 bg-orange-600 text-white rounded mr-4 text-xs md:text-lg 2xl:text-2xl 2xl:px-4 3xl:text-4xl 3xl:px-6 3xl:py-4">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              </router-link>
             </div>
           </div>
         </div>
@@ -87,7 +77,7 @@ const handleDeleteTrack = async () => {
         <div>
 
           <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-            Треки
+            Трек
           </div>
 
           <div class="w-full flex items-center border-b border-gray-300 p-4 3xl:p-6" v-if="!initialLoading">
@@ -134,25 +124,6 @@ const handleDeleteTrack = async () => {
                        :index="index + 1" :id="artist.id" :name="artist.name"
                        :avatar="artist.avatar" :createdAt="artist.createdAt" />
 
-        </div>
-
-        <div v-if="track.clip">
-          <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-            Клип
-          </div>
-          <iframe
-              :src="`https://www.youtube.com/embed/${getYouTubeVideoId(track.clip)}`"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              class="w-full h-96"
-          ></iframe>
-        </div>
-        <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-          Текст
-        </div>
-        <div>
-          <p class="text-center xl:text-xl 2xl:text-2xl 3xl:text-4xl" v-html="formattedText"></p>
         </div>
       </div>
     </div>

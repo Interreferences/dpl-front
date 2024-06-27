@@ -1,90 +1,80 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import {ref, onMounted, onBeforeUnmount, onBeforeMount, computed} from 'vue';
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Web-player/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
 import Player from "@/components/Web-player/Player.vue";
-import {getArtists, searchArtistsByName} from "@/services/api.js";
+import {getArtists, searchArtistsByName} from "@/services/artists.js";
 import ArtistCard from "@/components/Web-player/ArtistCard.vue";
+import { useUserStore } from '@/stores/user.js';
+import { useRouter } from 'vue-router';
 
-const artists = ref([]); // Полный список артистов
-const displayedArtists = ref([]); // Отображаемая порция артистов
-const currentIndex = ref(0); // Текущий индекс
-const limit = ref(10); // Количество записей на порцию
-const isLoading = ref(false); // Состояние загрузки данных
-const initialLoading = ref(true); // Состояние первой загрузки данных
-const scrollContainer = ref(null); // Ссылка на элемент прокрутки
-const searchQuery = ref(''); // Значение поиска
-const loadAllArtists = async () => {
+const userStore = useUserStore();
+const router = useRouter();
+
+const artists = ref([]);
+const isLoading = ref(true);
+const searchQuery = ref('');
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+onBeforeMount(() => {
+  if (!userStore.requireAuth()) {
+    return;
+  }
+});
+
+const loadAllArtists = async (page = 1, limit = 10) => {
   try {
-    const data = await getArtists();
-    return data;
+    isLoading.value = true;
+    const data = await getArtists(page, limit);
+    artists.value = data.artists;
+    console.log(artists);
+    totalPages.value = data.maxPages;
   } catch (error) {
-    throw error;
+    console.error('Ошибка при загрузке:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const searchArtists = async () => {
-  if (!searchQuery.value) return;
   try {
-    const data = await searchArtistsByName(searchQuery.value);
-    artists.value = data;
-    displayedArtists.value = [];
-    currentIndex.value = 0;
-    loadMoreArtists();
+    isLoading.value = true;
+    const data = await searchArtistsByName(searchQuery.value, currentPage.value);
+    artists.value = data.artists;
+    totalPages.value = Math.ceil(data.total / 10);
   } catch (error) {
-    console.error('Ошибка при поиске:', error);
+    console.error('Ошибка при поиске лейблов:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const resetArtists = async () => {
   searchQuery.value = '';
-  try {
-    artists.value = await loadAllArtists();
-    displayedArtists.value = [];
-    currentIndex.value = 0;
-    loadMoreArtists();
-  } catch (error) {
-    console.error('Ошибка при сбросе:', error);
+  currentPage.value = 1;
+  await loadAllArtists(currentPage.value);
+};
+
+const nextPage = async () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    await loadAllArtists(currentPage.value);
   }
 };
 
-const loadMoreArtists = () => {
-  if (isLoading.value || currentIndex.value >= artists.value.length) return;
-
-  isLoading.value = true;
-  const newArtists = artists.value.slice(currentIndex.value, currentIndex.value + limit.value);
-  displayedArtists.value = [...displayedArtists.value, ...newArtists];
-  currentIndex.value += limit.value;
-  isLoading.value = false;
-};
-
-const handleScroll = () => {
-  if (!scrollContainer.value) return;
-
-  const container = scrollContainer.value;
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    loadMoreArtists();
+const previousPage = async () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    await loadAllArtists(currentPage.value);
   }
 };
 
-// Загружаем всех артистов при монтировании компонента и отображаем первую порцию
 onMounted(async () => {
-  try {
-    artists.value = await loadAllArtists();
-    loadMoreArtists(); // Отображаем первую порцию данных
-    scrollContainer.value.addEventListener('scroll', handleScroll);
-    initialLoading.value = false; // Завершаем начальную загрузку
-  } catch (error) {
-    console.error('Ошибка при загрузке:', error);
-  }
+  await loadAllArtists(currentPage.value);
 });
 
-onBeforeUnmount(() => {
-  if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener('scroll', handleScroll);
-  }
-});
 
 </script>
 <template>
@@ -92,9 +82,9 @@ onBeforeUnmount(() => {
     <Header />
     <div class="flex flex-row overflow-hidden">
       <Sidebar />
-      <div ref="scrollContainer" class="flex flex-col w-full h-full overflow-y-scroll">
+      <div class="flex flex-col w-full h-full overflow-y-scroll">
 
-        <div class="flex flex-col" v-if="!initialLoading">
+        <div class="flex flex-col" v-if="!isLoading">
           <div class="flex flex-row justify-between p-2 md:p-4 2xl:p-8 w-full">
             <div class="flex flex-row w-6/12">
               <button @click="resetArtists" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
@@ -108,11 +98,23 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div class="flex flex-wrap">
-          <ArtistCard v-for="(artist, index) in displayedArtists"
+          <ArtistCard v-for="artist in artists"
                       :key="artist.id"
                       :id="artist.id"
                       :avatar="artist.avatar"
                       :name="artist.name" />
+        </div>
+        <div v-if="isLoading" class="py-4">
+          <Loader />
+        </div>
+        <div class="flex items-center self-center mt-4 py-12">
+          <button @click="previousPage" :disabled="currentPage === 1" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+          <span class="mx-12">{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-right"></i>
+          </button>
         </div>
       </div>
     </div>

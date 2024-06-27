@@ -1,21 +1,20 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import {deleteLabel, getLabelById} from "@/services/api"; // Импортируем функцию getArtistById
+import {deleteLabel, getLabelById} from "@/services/labels.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
-import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import ReleaseRow from "@/components/Admin-panel/ReleaseRow.vue";
 import Modal from "@/components/Admin-panel/Modal.vue";
 
-const label = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
+const label = ref(null);
+const initialLoading = ref(true);
 const showDeleteModal = ref(false);
 
-const route = useRoute(); // Получаем маршрут
+const route = useRoute();
 const router = useRouter();
-const labelId = route.params.id; // Извлекаем id из параметров маршрута
+const labelId = route.params.id;
 
 const loadLabel = async (id) => {
   try {
@@ -30,7 +29,7 @@ onMounted(async () => {
   try {
     label.value = await loadLabel(labelId);
     console.log(label);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
@@ -39,7 +38,7 @@ onMounted(async () => {
 const handleDeleteLabel = async () => {
   try {
     await deleteLabel(labelId);
-    router.push('/admin-panel/labels'); // Перенаправляем пользователя после удаления
+    router.push('/admin-panel/labels');
   } catch (error) {
     console.error('Ошибка при удалении:', error);
   }
@@ -90,7 +89,7 @@ const handleDeleteLabel = async () => {
 
           <ReleaseRow v-for="(release, index) in label.releases" :key="release.id"
                       :id="release.id" :title="release.title" :release-date="release.releaseDate"
-                      :published="release.published" :releasesType="release.releasesType" :labels="release.labels"
+                      :releasesType="release.releasesType" :labels="release.labels"
                       :artists="release.artists" :cover="release.cover" :index="index" />
         </div>
       </div>

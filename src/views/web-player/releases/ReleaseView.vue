@@ -1,11 +1,10 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import { getReleaseById} from "@/services/api"; // Импортируем функцию getArtistById
+import {getReleaseById} from "@/services/releases.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Web-player/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
-import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import TrackEl from "@/components/Web-player/TrackEl.vue";
 import Player from "@/components/Web-player/Player.vue";
 
@@ -36,7 +35,7 @@ onMounted(async () => {
 });
 
 const coverUrl = computed(() => {
-  return release.value ? `http://188.130.154.92:7000/${release.value.cover}` : '';
+  return release.value ? `http://185.159.128.11:5000/${release.value.cover}` : '';
 });
 
 </script>
@@ -80,7 +79,6 @@ const coverUrl = computed(() => {
               :listens="track.listens"
               :release="track.release"
               :explicit_content="track.explicit_content"
-              :createdAt="track.createdAt"
               :audio="track.audio"
           />
         </div>

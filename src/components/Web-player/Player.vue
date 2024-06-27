@@ -8,7 +8,7 @@ const duration = ref(0); // Track duration
 
 const coverUrl = computed(() => {
   if (playerStore.currentTrack) {
-    return `http://188.130.154.92:7000/${playerStore.currentTrack.release.cover}`;
+    return `http://185.159.128.11:5000/${playerStore.currentTrack.release.cover}`;
   }
   return '';
 });
@@ -59,7 +59,7 @@ watch(
     <div class="flex items-center flex-row">
       <img :src="coverUrl" alt="Cover" class="w-8 h-8 md:w-12 md:h-12 xl:w-16 xl:h-16 2xl:w-24 2xl:h-24 3xl:w-48 3xl:h-48" v-if="playerStore.currentTrack"/>
       <div class="flex flex-col text-xs text-white invisible md:visible md:ml-2 xl:text-base 2xl:text-2xl 3xl:text-4xl" v-if="playerStore.currentTrack">
-        <router-link :to="'/tracks/' + playerStore.currentTrack.id">
+        <router-link :to="'/web-player/releases/' + playerStore.currentTrack.release.id">
           <span>{{ playerStore.currentTrack.title }}</span>
         </router-link>
         <span>{{ playerStore.currentTrack.artists.map(artist => artist.name).join(', ') }}</span>

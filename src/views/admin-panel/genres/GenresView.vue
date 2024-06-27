@@ -1,90 +1,82 @@
 <script setup>
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
-import {ref, onMounted, onBeforeUnmount} from "vue";
-import {getGenres, searchGenresByName} from "@/services/api.js";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
+import {getGenres, searchGenresByName} from "@/services/genres.js";
 import GenreRow from "@/components/Admin-panel/GenreRow.vue";
 import Loader from "@/components/Loader.vue";
+import { useUserStore } from '@/stores/user.js';
+import { useRouter } from 'vue-router';
+
+const userStore = useUserStore();
+const router = useRouter();
 
 const genres = ref([]);
-const displayedGenres = ref([]); // Отображаемая порция артистов
-const currentIndex = ref(0); // Текущий индекс
-const limit = ref(10); // Количество записей на порцию
-const isLoading = ref(false); // Состояние загрузки данных
-const initialLoading = ref(true); // Состояние первой загрузки данных
-const scrollContainer = ref(null); // Ссылка на элемент прокрутки
-const searchQuery = ref(''); // Значение поиска
+const isLoading = ref(true);
+const searchQuery = ref('');
+const currentPage = ref(1);
+const totalPages = ref(1);
 
-const loadAllGenres = async () => {
-  try {
-    const data = await getGenres();
-    return data;
-  } catch (error) {
-    throw error;
+onBeforeMount(() => {
+  if (!userStore.isAuthenticated() || !isAdmin.value) {
+    router.push('/auth/login');
   }
-}
+});
+
+const isAdmin = computed(() => {
+  return userStore.isAdmin();
+});
+
+const loadAllGenres = async (page = 1, limit = 10) => {
+  try {
+    isLoading.value = true;
+    const data = await getGenres(page, limit);
+    console.log(data);
+    genres.value = data.genres;
+    totalPages.value = data.maxPages;
+  } catch (error) {
+    console.error('Ошибка при загрузке:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const searchGenres = async () => {
-  if (!searchQuery.value) return;
   try {
-    const data = await searchGenresByName(searchQuery.value);
-    genres.value = data;
-    displayedGenres.value = [];
-    currentIndex.value = 0;
-    loadMoreGenres();
+    isLoading.value = true;
+    const data = await searchGenresByName(searchQuery.value, currentPage.value);
+    genres.value = data.genres;
+    totalPages.value = Math.ceil(data.total / 10);
   } catch (error) {
-    console.error('Ошибка при поиске:', error);
+    console.error('Ошибка при поиске лейблов:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const resetGenres = async () => {
   searchQuery.value = '';
-  try {
-    genres.value = await loadAllGenres();
-    displayedGenres.value = [];
-    currentIndex.value = 0;
-    loadMoreGenres();
-  } catch (error) {
-    console.error('Ошибка при сбросе:', error);
+  currentPage.value = 1;
+  await loadAllGenres(currentPage.value);
+};
+
+const nextPage = async () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    await loadAllGenres(currentPage.value);
   }
 };
 
-const loadMoreGenres = () => {
-  if (isLoading.value || currentIndex.value >= genres.value.length) return;
-
-  isLoading.value = true;
-  const newGenres = genres.value.slice(currentIndex.value, currentIndex.value + limit.value);
-  displayedGenres.value = [...displayedGenres.value, ...newGenres];
-  currentIndex.value += limit.value;
-  isLoading.value = false;
-};
-
-const handleScroll = () => {
-  if (!scrollContainer.value) return;
-
-  const container = scrollContainer.value;
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    loadMoreGenres();
+const previousPage = async () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    await loadAllGenres(currentPage.value);
   }
 };
 
 onMounted(async () => {
-  try {
-    genres.value = await loadAllGenres();
-    loadMoreGenres();
-    scrollContainer.value.addEventListener('scroll', handleScroll);
-    initialLoading.value = false; // Завершаем начальную загрузку
-  } catch (error) {
-    console.error('Ошибка при загрузке:', error);
-  }
+  await loadAllGenres(currentPage.value);
 });
-
-onBeforeUnmount(() => {
-  if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener('scroll', handleScroll);
-  }
-});
-
 </script>
 
 <template>
@@ -92,8 +84,8 @@ onBeforeUnmount(() => {
     <Header />
     <div class="flex flex-row overflow-hidden">
       <Sidebar />
-      <div ref="scrollContainer" class="flex flex-col w-full overflow-y-scroll" :ref="scrollContainer">
-        <div class="flex flex-col" v-if="!initialLoading">
+      <div class="flex flex-col w-full overflow-y-scroll">
+        <div class="flex flex-col" v-if="!isLoading">
           <div class="flex flex-row justify-between p-2 md:p-4 2xl:p-8 w-full">
             <div class="flex flex-row w-6/12">
               <button @click="resetGenres" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
@@ -116,24 +108,29 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="w-full flex items-center border-b border-gray-300 py-4 2xl:py-8" v-if="!initialLoading">
-
+        <div v-if="!isLoading" class="w-full flex items-center border-b border-gray-300 py-4 2xl:py-8">
           <p class="w-1/5 text-center xl:text-2xl 2xl:text-4xl 3xl:text-5xl">#</p>
           <p class="w-2/5 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Название</p>
-          <p class="w-2/5 xl:text-2xl 2xl:text-4xl 3xl:text-5xl">Дата создания</p>
-
-
         </div>
 
-        <div v-if="displayedGenres.length > 0 && !initialLoading">
-          <GenreRow v-for="(genre, index) in displayedGenres" :key="genre.id"
-                    :index="index + 1" :id="genre.id" :name="genre.name" :createdAt="genre.createdAt" />
+        <div v-if="genres.length > 0 && !isLoading">
+          <GenreRow v-for="(genre, index) in genres" :key="genre.id"
+                    :index="index + 1" :id="genre.id" :name="genre.name" />
         </div>
-        <div v-else-if="!initialLoading && displayedGenres.length === 0">
+        <div v-else-if="!isLoading && genres.length === 0">
           <p>Нет данных о жанрах</p>
         </div>
-        <div v-if="isLoading && !initialLoading" class="py-4">
+        <div v-if="isLoading" class="py-4">
           <Loader />
+        </div>
+        <div class="flex items-center self-center mt-4 py-12">
+          <button @click="previousPage" :disabled="currentPage === 1" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+          <span class="mx-12">{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="rounded-full px-2 text-gray-300 shadow-md hover:text-neutral-800 xl:px-4 2xl:text-2xl 2xl:p-6 2xl:shadow-xl 3xl:text-3xl">
+            <i class="fa-solid fa-angle-right"></i>
+          </button>
         </div>
       </div>
     </div>

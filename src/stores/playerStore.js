@@ -14,7 +14,7 @@ export const usePlayerStore = defineStore('player', () => {
         isPlaying.value = true;
         currentTime.value = 0;
 
-        audioElement.src = `http://188.130.154.92:7000/${track.audio}`;
+        audioElement.src = `http://185.159.128.11:5000/${track.audio}`;
         audioElement.play();
     };
 

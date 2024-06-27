@@ -1,31 +1,47 @@
 <script setup>
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, onBeforeMount, computed} from 'vue';
 import Dropzone from 'dropzone';
 import 'dropzone/dist/dropzone.css';
-import { updateArtist } from "@/services/api"; // Импортируем функцию updateArtist
+import { updateArtist } from "@/services/artists.js";
 import { useRoute, useRouter } from "vue-router";
 
-const route = useRoute(); // Получаем маршрут
+import { useUserStore } from '@/stores/user.js';
+
+const userStore = useUserStore();
+
+onBeforeMount(() => {
+  if (!userStore.isAuthenticated() || !isAdmin.value) {
+    router.push('/auth/login');
+  }
+});
+
+const isAdmin = computed(() => {
+  return userStore.isAdmin();
+});
+
+const route = useRoute();
 const router = useRouter();
 const artistId = ref(route.params.id);
 const name = ref('');
 const avatar = ref(null);
 const banner = ref(null);
-const bio = ref('');
 
 const handleSubmit = () => {
   const formData = new FormData();
   formData.append('name', name.value);
-  formData.append('avatar', avatar.value);
-  formData.append('banner', banner.value);
-  formData.append('bio', bio.value);
+  if (avatar.value) {
+    formData.append('avatar', avatar.value);
+  }
+  if (banner.value) {
+    formData.append('banner', banner.value);
+  }
+  const contentType = (avatar.value || banner.value) ? 'multipart/form-data' : 'application/json';
 
-  updateArtist(artistId.value, formData)
+  updateArtist(artistId.value, formData, contentType)
       .then(response => {
         console.log('Success:', response);
-        // Перенаправление на страницу артистов в админ-панели
         router.push('/admin-panel/artists');
       })
       .catch(error => {
@@ -88,11 +104,6 @@ onMounted(() => {
                  class="dropzone mt-1 block w-full p-4 border-2 border-dashed border-gray-300 rounded-md text-gray-500 2xl:text-2xl 2xl:mt-2 3xl:text-4xl">
               Перетащите сюда файл или нажмите для выбора
             </div>
-          </div>
-          <div>
-            <label for="bio" class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8">Об артисте</label>
-            <textarea id="bio" v-model="bio" rows="8"
-                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm xl:text-xl 2xl:text-2xl 2xl:mt-2 3xl:text-4xl"></textarea>
           </div>
           <div>
             <button type="submit"

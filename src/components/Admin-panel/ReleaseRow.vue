@@ -12,13 +12,8 @@ const props = defineProps({
   releaseDate: { type: String, required: true }
 });
 
-const formattedDate = computed(() => {
-  const date = new Date(props.createdAt);
-  return date.toLocaleString();
-});
-
 const coverUrl = computed(() => {
-  return `http://188.130.154.92:7000/${props.cover}`;
+  return `http://185.159.128.11:5000/${props.cover}`;
 });
 </script>
 

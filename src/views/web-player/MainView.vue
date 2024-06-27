@@ -1,16 +1,37 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Web-player/Sidebar/Sidebar.vue";
-import Loader from "@/components/Loader.vue";
 import Player from "@/components/Web-player/Player.vue";
-import {getLastArtists, getReleasedTracks, getTopTracks} from "@/services/api.js";
-import TrackEl from "@/components/Web-player/TrackEl.vue";
+import {onBeforeMount, computed, onMounted, ref} from 'vue';
+import { useUserStore } from '@/stores/user.js';
+import { useRouter } from 'vue-router';
 import ArtistCard from "@/components/Web-player/ArtistCard.vue";
+import Loader from "@/components/Loader.vue";
+import TrackEl from "@/components/Web-player/TrackEl.vue";
+import {getReleasedTracks, getTopTracks} from "@/services/tracks.js";
+import {getArtists} from "@/services/artists.js";
+
+const userStore = useUserStore();
+const router = useRouter();
 
 const tracks = ref([]);
 const artists = ref([]);
+const displayedTracks = ref([]);
 const isLoading = ref(true);
+const searchQuery = ref('');
+const currentPage = ref(1);
+const totalPages = ref(1);
+const tracksPerPage = 10;
+
+onBeforeMount(() => {
+  if (!userStore.requireAuth()) {
+    return;
+  }
+});
+
+const isAdmin = computed(() => {
+  return userStore.isAdmin();
+});
 
 const loadTracks = async () => {
   try {
@@ -23,59 +44,55 @@ const loadTracks = async () => {
   }
 };
 
-const loadArtists = async () => {
+const loadAllArtists = async (page = 1, limit = 10) => {
   try {
-    const data = await getLastArtists();
-    console.log(data);
-    return data;
+    isLoading.value = true;
+    const data = await getArtists(page, limit);
+    artists.value = data.artists;
+    console.log(artists);
+    totalPages.value = data.maxPages;
   } catch (error) {
-    console.error('Ошибка при загрузке треков:', error);
-    throw error;
+    console.error('Ошибка при загрузке:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(async () => {
+  await loadAllArtists(currentPage.value);
   try {
     tracks.value = await loadTracks();
-    artists.value = await loadArtists();
     console.log(tracks);
-    isLoading.value = false; // Завершаем начальную загрузку
+    isLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
 });
 
 </script>
+
 <template>
   <div class="flex flex-col h-screen">
-    <Header />
+    <Header/>
     <div class="flex flex-row overflow-hidden">
-      <Sidebar />
-      <Loader v-if="isLoading" />
-      <div v-else class="flex flex-col w-full h-full overflow-y-scroll">
-        <div class="text-2xl mt-6 font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-          Добро пожаловать!
-        </div>
+      <Sidebar/>
+      <div class="flex flex-col w-full h-full overflow-y-scroll">
+        <div class="flex flex-col items-center md:flex-row md:justify-between md:p-6 md:items-baseline">
 
-        <div class="text-2xl p-6 font-bold text-left xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-          Артисты
-        </div>
+          <div v-if="userStore.isAuthenticated()"
+               class="text-2xl mt-6 font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
+            Добро пожаловать, {{ userStore.user.nickname }}!
+          </div>
 
-        <div class="flex flex-wrap">
-          <ArtistCard v-for="(artist, index) in artists"
-                      :key="artist.id"
-                      :id="artist.id"
-                      :avatar="artist.avatar"
-                      :name="artist.name" />
+          <router-link v-if="isAdmin" to="/admin-panel/artists">
+            <div class="flex items-center flex-row text-2xl mt-6 font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
+              <i class="fa-solid fa-gear mr-2"></i>
+              <p>Управление</p>
+            </div>
+          </router-link>
         </div>
-
-        <div class="text-2xl p-6 font-bold text-left xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-          Треки
-        </div>
-
         <div class="flex flex-col">
-
-          <div class="w-full flex items-center justify-between border-b border-gray-300 hover:bg-gray-100 py-4">
+          <div v-if="!isLoading" class="w-full flex items-center justify-between border-b border-gray-300 hover:bg-gray-100 py-4">
             <div class="invisible md:text-center md:visible w-1/6 xl:w-1/12 2xl:text-2xl 3xl:text-4xl">#</div>
             <div class="w-1/5 md:w-1/6 xl:w-1/12 2xl:text-2xl 3xl:text-4xl"></div>
             <div class="w-1/5 md:w-1/6 xl:w-1/12 2xl:text-2xl 3xl:text-4xl"></div>
@@ -83,25 +100,34 @@ onMounted(async () => {
             <div class="invisible items-center xl:visible xl:w-3/12 2xl:text-2xl 3xl:text-4xl">Релиз</div>
             <div class="invisible items-center md:visible w-1/6 2xl:text-2xl 3xl:text-4xl">Прослушиваний</div>
           </div>
-
-          <div v-if="tracks.length > 0">
+          <div v-if="tracks.length > 0 && !isLoading">
             <TrackEl
                 v-for="(track, index) in tracks"
                 :key="track.id"
-                :index="index + 1"
+                :index="index"
                 :id="track.id"
                 :title="track.title"
                 :artists="track.artists"
                 :listens="track.listens"
                 :release="track.release"
                 :explicit_content="track.explicit_content"
-                :createdAt="track.createdAt"
                 :audio="track.audio"
             />
           </div>
         </div>
+
+        <div class="flex flex-wrap">
+          <ArtistCard v-for="artist in artists"
+                      :key="artist.id"
+                      :id="artist.id"
+                      :avatar="artist.avatar"
+                      :name="artist.name" />
+        </div>
+        <div v-if="isLoading" class="py-4">
+          <Loader />
+        </div>
       </div>
     </div>
-    <Player />
+    <Player/>
   </div>
 </template>

@@ -1,13 +1,16 @@
 <script setup>
 import Dropzone from "dropzone";
-import Loader from "@/components/Loader.vue";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {onMounted, ref} from "vue";
-import {createRelease, getArtists, getLabels, getTracksWithoutReleases} from "@/services/api.js";
+import {createRelease} from "@/services/releases.js";
+import {getArtists} from "@/services/artists.js";
+import {getLabels} from "@/services/labels.js";
+import {getTracksWithoutReleases} from "@/services/tracks.js";
 import Multiselect from "vue-multiselect";
-import router from "@/router/index.js";
+import {useRouter} from "vue-router";
 
+const router = useRouter();
 const title = ref('');
 const cover = ref(null);
 const releaseDate = ref('');
@@ -19,23 +22,37 @@ const labels = ref([]);
 const artists = ref([]);
 const tracksWithoutReleases = ref([]);
 
-const loading = ref(true); // Add a loading state
-
-const baseUrl = 'http://188.130.154.92:7000/';
-
-const mounted = ref(false);
+const baseUrl = 'http://185.159.128.11:5000/';
 
 const customLabel = ({ name, avatar }) => {
   return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 60px; height: 60px; margin-right: 10px; border-radius: 50%;"> ${name}`;
 };
 
-const loadAllLabels = async () => {
+const loadAllLabels = async (page = 1, limit = 10) => {
   try {
-    const data = await getLabels();
-    return data;
+    const data = await getLabels(page, limit);
+    labels.value = data.labels;
   } catch (error) {
-    console.error('Error loading labels:', error);
+    console.error('Ошибка при загрузке:', error);
+  }
+};
+
+const loadAllTracksWithoutReleases = async () => {
+  try {
+    const data = await getTracksWithoutReleases();
+    tracksWithoutReleases.value = data;
+  } catch (error) {
+    console.error('Error loading tracks:', error);
     throw error;
+  }
+};
+
+const loadAllArtists = async (page = 1, limit = 10) => {
+  try {
+    const data = await getArtists(page, limit);
+    artists.value = data.artists;
+  } catch (error) {
+    console.error('Ошибка при загрузке:', error);
   }
 };
 
@@ -71,38 +88,13 @@ const handleSubmit = () => {
       });
 };
 
-const loadAllTracksWithoutReleases = async () => {
-  try {
-    const data = await getTracksWithoutReleases();
-    return data;
-  } catch (error) {
-    console.error('Error loading tracks:', error);
-    throw error;
-  }
-};
-
-const loadAllArtists = async () => {
-  try {
-    const data = await getArtists();
-    return data;
-  } catch (error) {
-    console.error('Error loading artists:', error);
-    throw error;
-  }
-};
-
 onMounted(async () => {
   try {
-    labels.value = await loadAllLabels();
-    console.log(labels);
-    artists.value = await loadAllArtists();
-    console.log(artists);
-    tracksWithoutReleases.value = await loadAllTracksWithoutReleases();
-    console.log(tracksWithoutReleases);
+    await loadAllLabels();
+    await loadAllArtists();
+    await loadAllTracksWithoutReleases();
   } catch (error) {
     console.error('Error loading data:', error);
-  } finally {
-    loading.value = false; // Set loading to false after data is fetched
   }
 
   new Dropzone("#cover-dropzone", {
@@ -199,7 +191,6 @@ onMounted(async () => {
             />
           </div>
 
-          <!-- Поле с выбором треков -->
           <div>
             <label for="tracks" class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8">Треки</label>
             <multiselect

@@ -1,21 +1,35 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import {ref, onMounted, computed, onBeforeMount} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getArtistById, deleteArtist } from "@/services/api"; // Импортируем функцию deleteArtist
+import { getArtistById, deleteArtist } from "@/services/artists.js"; // Импортируем функцию deleteArtist
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
 import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import ReleaseRow from "@/components/Admin-panel/ReleaseRow.vue";
 import Modal from "@/components/Admin-panel/Modal.vue"; // Импортируем модальное окно
+import { useUserStore } from '@/stores/user.js';
 
-const artist = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
-const showDeleteModal = ref(false); // Состояние показа модального окна
-
-const route = useRoute(); // Получаем маршрут
+const userStore = useUserStore();
 const router = useRouter();
-const artistId = route.params.id; // Извлекаем id из параметров маршрута
+
+onBeforeMount(() => {
+  if (!userStore.isAuthenticated() || !isAdmin.value) {
+    router.push('/auth/login');
+  }
+});
+
+const isAdmin = computed(() => {
+  return userStore.isAdmin();
+});
+
+const artist = ref(null);
+const initialLoading = ref(true);
+const showDeleteModal = ref(false);
+
+const route = useRoute();
+const router = useRouter();
+const artistId = route.params.id;
 
 const loadArtist = async (id) => {
   try {
@@ -26,31 +40,27 @@ const loadArtist = async (id) => {
   }
 };
 
-// Загружаем артиста при монтировании компонента
 onMounted(async () => {
   try {
     artist.value = await loadArtist(artistId);
-    console.log(artist);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
 });
 
-// Вычисляемое свойство для URL аватара
 const bannerUrl = computed(() => {
-  return artist.value ? `http://188.130.154.92:7000/${artist.value.banner}` : '';
+  return artist.value ? `http://185.159.128.11:5000/${artist.value.banner}` : '';
 });
 
 const avatarUrl = computed(() => {
-  return artist.value ? `http://188.130.154.92:7000/${artist.value.avatar}` : '';
+  return artist.value ? `http://185.159.128.11:5000/${artist.value.avatar}` : '';
 });
 
-// Функция для удаления артиста
 const handleDeleteArtist = async () => {
   try {
     await deleteArtist(artistId);
-    router.push('/admin-panel/artists'); // Перенаправляем пользователя после удаления
+    router.push('/admin-panel/artists');
   } catch (error) {
     console.error('Ошибка при удалении:', error);
   }
@@ -101,7 +111,7 @@ const handleDeleteArtist = async () => {
           <TrackRow v-for="(track, index) in artist.tracks" :key="track.id"
                     :index="index" :id="track.id" :title="track.title" :artists="track.artists"
                     :listens="track.listens" :genre="track.genre" :release="track.release"
-                    :explicit_content="track.explicit_content" :createdAt="track.createdAt" :audio="track.audio" />
+                    :explicit_content="track.explicit_content" :audio="track.audio" />
         </div>
         <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
           Релизы
@@ -121,7 +131,7 @@ const handleDeleteArtist = async () => {
         <div v-if="artist.releases && !initialLoading">
           <ReleaseRow v-for="(release, index) in artist.releases" :key="release.id"
                       :id="release.id" :title="release.title" :release-date="release.releaseDate"
-                      :published="release.published" :releasesType="release.releasesType" :labels="release.labels"
+                      :releasesType="release.releasesType" :labels="release.labels"
                       :artists="release.artists" :cover="release.cover" :index="index" />
         </div>
       </div>

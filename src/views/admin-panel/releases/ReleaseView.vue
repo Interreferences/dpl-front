@@ -1,7 +1,7 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import {deleteRelease, getReleaseById} from "@/services/api"; // Импортируем функцию getArtistById
+import {deleteRelease, getReleaseById} from "@/services/releases.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
@@ -9,13 +9,13 @@ import TrackRow from "@/components/Admin-panel/TrackRow.vue";
 import ReleaseRow from "@/components/Admin-panel/ReleaseRow.vue";
 import Modal from "@/components/Admin-panel/Modal.vue";
 
-const release = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
+const release = ref(null);
+const initialLoading = ref(true);
 const showDeleteModal = ref(false);
 
 const router = useRouter();
-const route = useRoute(); // Получаем маршрут
-const releaseId = route.params.id; // Извлекаем id из параметров маршрута
+const route = useRoute();
+const releaseId = route.params.id;
 
 const loadRelease = async (id) => {
   try {
@@ -26,25 +26,24 @@ const loadRelease = async (id) => {
   }
 };
 
-// Загружаем артиста при монтировании компонента
 onMounted(async () => {
   try {
     release.value = await loadRelease(releaseId);
     console.log(release);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
 });
 
 const coverUrl = computed(() => {
-  return release.value ? `http://188.130.154.92:7000/${release.value.cover}` : '';
+  return release.value ? `http://185.159.128.11:5000/${release.value.cover}` : '';
 });
 
 const handleDeleteRelease = async () => {
   try {
     await deleteRelease(releaseId);
-    router.push('/admin-panel/releases'); // Перенаправляем пользователя после удаления
+    router.push('/admin-panel/releases');
   } catch (error) {
     console.error('Ошибка при удалении:', error);
   }
@@ -68,11 +67,11 @@ const handleDeleteRelease = async () => {
                 <button @click="showDeleteModal = true" class="mt-2 px-2 py-2 bg-red-600 text-white rounded text-xs md:text-lg 2xl:text-2xl 3xl:text-4xl">
                   <i class="fa-solid fa-trash"></i>
                 </button>
-<!--                <router-link :to="`/admin-panel/releases/edit/${releaseId}`">-->
-<!--                  <button class="mt-2 ml-4 px-2 py-2 bg-orange-600 text-white rounded text-xs md:text-lg 2xl:text-2xl 3xl:text-4xl">-->
-<!--                    <i class="fa-solid fa-pen-to-square"></i>-->
-<!--                  </button>-->
-<!--                </router-link>-->
+                <router-link :to="`/admin-panel/releases/edit/${releaseId}`">
+                  <button class="mt-2 ml-4 px-2 py-2 bg-orange-600 text-white rounded text-xs md:text-lg 2xl:text-2xl 3xl:text-4xl">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </router-link>
               </div>
             </div>
           </div>
@@ -87,7 +86,6 @@ const handleDeleteRelease = async () => {
           <p class="w-2/6 md:w-5/12 xl:w-3/12 2xl:w-2/12 2xl:text-xl 3xl:w-3/12 3xl:text-3xl">Аудио</p>
           <p class="hidden xl:block xl:w-1/12 xl:text-center 2xl:w-1/12 2xl:text-xl 3xl:w-1/12 3xl:text-3xl">Прослушиваний</p>
           <p class="hidden md:block md:w-1/12 md:text-center xl:w-1/12 2xl:text-xl 2xl:w-1/12 3xl:w-1/12 3xl:text-3xl">EC</p>
-          <p class="hidden 3xl:block 3xl:w-1/12 2xl:text-xl 3xl:text-center 3xl:text-3xl">Дата создания</p>
         </div>
         <div v-if="release.tracks.length > 0 && !initialLoading">
           <TrackRow v-for="(track, index) in release.tracks" :key="track.id"

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getArtistById } from "@/services/api";
+import { getArtistById } from "@/services/artists.js";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Web-player/Sidebar/Sidebar.vue";
 import Loader from "@/components/Loader.vue";
@@ -9,12 +9,11 @@ import TrackEl from "@/components/Web-player/TrackEl.vue";
 import ReleaseCard from "@/components/Web-player/ReleaseCard.vue";
 import Player from "@/components/Web-player/Player.vue";
 
-const artist = ref(null); // Данные артиста
-const initialLoading = ref(true); // Состояние первой загрузки данных
+const artist = ref(null);
+const initialLoading = ref(true);
 
-const route = useRoute(); // Получаем маршрут
-const router = useRouter();
-const artistId = route.params.id; // Извлекаем id из параметров маршрута
+const route = useRoute();
+const artistId = route.params.id;
 
 const loadArtist = async (id) => {
   try {
@@ -25,32 +24,23 @@ const loadArtist = async (id) => {
   }
 };
 
-// Загружаем артиста при монтировании компонента
 onMounted(async () => {
   try {
     artist.value = await loadArtist(artistId);
     console.log(artist);
-    initialLoading.value = false; // Завершаем начальную загрузку
+    initialLoading.value = false;
   } catch (error) {
     console.error('Ошибка при загрузке:', error);
   }
 });
 
-// Вычисляемое свойство для URL аватара
 const bannerUrl = computed(() => {
-  return artist.value ? `http://188.130.154.92:7000/${artist.value.banner}` : '';
+  return artist.value ? `http://185.159.128.11:5000/${artist.value.banner}` : '';
 });
 
 const avatarUrl = computed(() => {
-  return artist.value ? `http://188.130.154.92:7000/${artist.value.avatar}` : '';
+  return artist.value ? `http://185.159.128.11:5000/${artist.value.avatar}` : '';
 });
-
-const formattedText = computed(() => {
-  return track.value ? track.value.text.replace(/\n/g, '<br>') : '';
-});
-
-
-
 </script>
 
 <template>
@@ -96,7 +86,6 @@ const formattedText = computed(() => {
               :listens="track.listens"
               :release="track.release"
               :explicit_content="track.explicit_content"
-              :createdAt="track.createdAt"
               :audio="track.audio"
           />
         </div>
@@ -104,19 +93,13 @@ const formattedText = computed(() => {
           Релизы
         </div>
         <div v-if="artist.releases && !initialLoading" class="flex flex-wrap">
-          <ReleaseCard v-for="(release, index) in artist.releases"
+          <ReleaseCard v-for="(release) in artist.releases"
                        :id="release.id"
                        :title="release.title"
                        :cover="release.cover"
           />
 
         </div>
-
-        <div class="text-2xl font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">
-          Биография
-        </div>
-
-        <p v-if="artist.bio">{{ artist.bio }}</p>
 
       </div>
     </div>

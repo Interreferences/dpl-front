@@ -4,49 +4,49 @@ import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import { onMounted, ref } from "vue";
 import Dropzone from "dropzone";
 import Multiselect from 'vue-multiselect';
-import {getArtists, getGenres, updateTrack} from "@/services/api.js";
+import {updateTrack} from "@/services/tracks.js";
+import {getArtists} from "@/services/artists.js";
+import {getGenres} from "@/services/genres.js";
 import {useRoute, useRouter} from "vue-router";
 
-const route = useRoute(); // Получаем маршрут
+const route = useRoute();
 const router = useRouter();
 const trackId = ref(route.params.id);
 
 const title = ref('');
-const audioFile = ref(null); // For storing the file
-const text = ref('');
-const clip = ref('');
-const explicit_content = ref(false); // Initialize as false
+const audioFile = ref(null);
+const explicit_content = ref(false);
 const genreId = ref('');
 const artistIds = ref([]);
 
 const genres = ref([]);
 const artists = ref([]);
 
-const loading = ref(true); // Add a loading state
+const loading = ref(true);
 
-const baseUrl = 'http://localhost:7000/';
+const baseUrl = 'http://185.159.128.11:5000/';
 
 const customLabel = ({ name, avatar }) => {
   return `<img src="${baseUrl}${avatar}" alt="${name}" style="width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;"> ${name}`;
 };
 
-const loadAllGenres = async () => {
+const loadAllGenres = async (page = 1, limit = 10) => {
   try {
-    const data = await getGenres();
-    return data;
+    const data = await getGenres(page, limit);
+    console.log(data);
+    genres.value = data.genres;
   } catch (error) {
-    console.error('Error loading genres:', error);
-    throw error;
+    console.error('Ошибка при загрузке:', error);
   }
 };
 
-const loadAllArtists = async () => {
+const loadAllArtists = async (page = 1, limit = 10) => {
   try {
-    const data = await getArtists();
-    return data;
+    const data = await getArtists(page, limit);
+    artists.value = data.artists;
+    console.log(artists);
   } catch (error) {
-    console.error('Error loading artists:', error);
-    throw error;
+    console.error('Ошибка при загрузке:', error);
   }
 };
 
@@ -55,8 +55,6 @@ const handleSubmit = () => {
   formData.append('title', title.value);
   formData.append('audio', audioFile.value);
   formData.append('genreId', parseInt(genreId.value));
-  formData.append('text', text.value);
-  formData.append('clip', clip.value);
   formData.append('explicit_content', explicit_content.value);
 
   const artistIdsArray = artistIds.value.map(artist => artist.id);
@@ -76,16 +74,16 @@ const handleSubmit = () => {
 
 onMounted(async () => {
   try {
-    genres.value = await loadAllGenres();
-    artists.value = await loadAllArtists();
+    await loadAllGenres();
+    await loadAllArtists();
   } catch (error) {
-    console.error('Error loading data:', error);
+    console.error('Ошибка загрузки данных:', error);
   } finally {
-    loading.value = false; // Set loading to false after data is fetched
+    loading.value = false;
   }
 
   new Dropzone('#audio-dropzone', {
-    url: '/file/post', // Specify the correct URL or remove if not used
+    url: '/file/post',
     autoProcessQueue: false,
     acceptedFiles: 'audio/*',
     addRemoveLinks: true,
@@ -162,14 +160,6 @@ onMounted(async () => {
               Перетащите сюда файл или нажмите для выбора
             </div>
           </div>
-          <div>
-            <label for="text"
-                   class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8">Текст
-              песни</label>
-            <textarea id="text" v-model="text" rows="16"
-                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm xl:text-xl 2xl:text-2xl 2xl:mt-2 3xl:text-4xl">
-            </textarea>
-          </div>
           <div class="flex flex-row items-baseline">
             <label for="explicit_content"
                    class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8 mr-8">
@@ -177,13 +167,6 @@ onMounted(async () => {
             </label>
             <input type="checkbox" id="explicit_content" v-model="explicit_content"
                    class="rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2 block 2xl:w-6 2xl:h-6 3xl:w-8 3xl:h-8"/>
-          </div>
-          <div>
-            <label for="clip"
-                   class="block text-sm font-medium text-gray-700 md:text-2xl 2xl:text-4xl 3xl:text-5xl 3xl:mb-8">Видеоклип</label>
-            <input type="text" id="clip" v-model="clip"
-                   class="w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2 block md:text-xl md:p-2 2xl:text-2xl 2xl:p-4 3xl:text-4xl 3xl:p-8"
-            />
           </div>
           <div>
             <button type="submit"

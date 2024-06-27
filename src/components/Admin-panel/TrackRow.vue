@@ -6,20 +6,14 @@ const props = defineProps({
   id: { type: Number, required: true },
   title: { type: String, required: true },
   audio: { type: String, required: true },
-  createdAt: { type: String, required: true },
   explicit_content: { type: Boolean, required: true },
   release: { type: Object, required: true },
   listens: { type: Number, required: true },
   artists: { type: Array, required: true }
 });
 
-const formattedDate = computed(() => {
-  const date = new Date(props.createdAt);
-  return date.toLocaleString();
-});
-
 const audioUrl = computed(() => {
-  return `http://188.130.154.92:7000/${props.audio}`;
+  return `http://185.159.128.11:5000/${props.audio}`;
 });
 </script>
 
@@ -44,7 +38,6 @@ const audioUrl = computed(() => {
           <i class="fa-solid fa-e"></i>
         </span>
       </p>
-      <p class="hidden 3xl:block 3xl:w-1/12 3xl:text-center 3xl:text-3xl">{{ formattedDate }}</p>
     </div>
   </router-link>
 </template>

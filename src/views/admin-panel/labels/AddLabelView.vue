@@ -2,10 +2,11 @@
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {ref} from "vue";
-import {createLabel} from "@/services/api.js";
-import router from "@/router/index.js";
+import {createLabel} from "@/services/labels.js";
+import {useRouter} from 'vue-router';
 
 const name = ref('');
+const router = useRouter();
 
 const handleSubmit = () => {
   const formData = new FormData();
@@ -14,7 +15,6 @@ const handleSubmit = () => {
   createLabel(formData)
       .then(response => {
         console.log('Success:', response.data);
-        // Перенаправление на страницу жанров в админ-панели
         router.push('/admin-panel/labels');
       })
       .catch((error) => {
