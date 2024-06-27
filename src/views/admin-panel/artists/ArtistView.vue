@@ -11,7 +11,6 @@ import Modal from "@/components/Admin-panel/Modal.vue"; // Импортируе�
 import { useUserStore } from '@/stores/user.js';
 
 const userStore = useUserStore();
-const router = useRouter();
 
 onBeforeMount(() => {
   if (!userStore.isAuthenticated() || !isAdmin.value) {
@@ -28,7 +27,6 @@ const initialLoading = ref(true);
 const showDeleteModal = ref(false);
 
 const route = useRoute();
-const router = useRouter();
 const artistId = route.params.id;
 
 const loadArtist = async (id) => {
