@@ -127,7 +127,7 @@ onMounted(async () => {
             <TrackEl
                 v-for="(track, index) in displayedTracks"
                 :key="track.id"
-                :index="index"
+                :index="index + 1"
                 :id="track.id"
                 :title="track.title"
                 :artists="track.artists"

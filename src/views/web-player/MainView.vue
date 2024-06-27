@@ -91,6 +91,9 @@ onMounted(async () => {
             </div>
           </router-link>
         </div>
+
+        <div class="text-2xl mt-6 font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">Популярные треки</div>
+
         <div class="flex flex-col">
           <div v-if="!isLoading" class="w-full flex items-center justify-between border-b border-gray-300 hover:bg-gray-100 py-4">
             <div class="invisible md:text-center md:visible w-1/6 xl:w-1/12 2xl:text-2xl 3xl:text-4xl">#</div>
@@ -104,7 +107,7 @@ onMounted(async () => {
             <TrackEl
                 v-for="(track, index) in tracks"
                 :key="track.id"
-                :index="index"
+                :index="index + 1"
                 :id="track.id"
                 :title="track.title"
                 :artists="track.artists"
@@ -115,7 +118,7 @@ onMounted(async () => {
             />
           </div>
         </div>
-
+        <div class="text-2xl mt-6 font-bold text-center xl:text-4xl 2xl:text-6xl 3xl:text-7xl">Артисты</div>
         <div class="flex flex-wrap">
           <ArtistCard v-for="artist in artists"
                       :key="artist.id"
