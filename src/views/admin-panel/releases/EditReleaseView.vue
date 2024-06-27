@@ -4,7 +4,10 @@ import Loader from "@/components/Loader.vue";
 import Header from "@/components/Header/Header.vue";
 import Sidebar from "@/components/Admin-panel/Sidebar/Sidebar.vue";
 import {onMounted, ref} from "vue";
-import {getArtists, getLabels, getTracksWithoutReleases, updateRelease} from "@/services/api.js";
+import {getArtists} from "@/services/artists.js";
+import {getLabels} from "@/services/labels.js";
+import {getTracksWithoutReleases} from "@/services/tracks.js";
+import {updateRelease} from "@/services/releases.js";
 import Multiselect from "vue-multiselect";
 import {useRoute, useRouter} from "vue-router";
 
